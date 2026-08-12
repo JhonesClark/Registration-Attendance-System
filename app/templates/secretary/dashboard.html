@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block title %}Secretary Dashboard{% endblock %}
+{% block content %}
+<div class="dashboard-card secretary-dashboard">
+  <div class="dashboard-header dashboard-header-row">
+    <div>
+      <div class="eyebrow">Overview</div>
+      <h2>Secretary Dashboard</h2>
+      <p class="dashboard-copy">Registration summary and recently added records.</p>
+    </div>
+    <div class="dashboard-actions-row">
+      <a class="button button-primary" href="{{ url_for('people.add_person') }}">Add Registration</a>
+      <a class="button button-secondary" href="{{ url_for('people.list_people') }}">People List</a>
+    </div>
+  </div>
+
+  <section class="kpi-grid">
+    <article class="kpi-card">
+      <div class="kpi-card-header">
+        <span class="kpi-card-title">Total People</span>
+        <span class="kpi-icon">◎</span>
+      </div>
+      <div class="kpi-card-value">{{ total_people }}</div>
+      <div class="kpi-card-foot">All people on file</div>
+    </article>
+
+    <article class="kpi-card kpi-card-success">
+      <div class="kpi-card-header">
+        <span class="kpi-card-title">Registered</span>
+        <span class="kpi-icon">✓</span>
+      </div>
+      <div class="kpi-card-value">{{ registered }}</div>
+      <div class="kpi-card-foot">Completed registrations</div>
+    </article>
+
+    <article class="kpi-card kpi-card-warning">
+      <div class="kpi-card-header">
+        <span class="kpi-card-title">Not Registered</span>
+        <span class="kpi-icon">!</span>
+      </div>
+      <div class="kpi-card-value">{{ not_registered }}</div>
+      <div class="kpi-card-foot">Still pending</div>
+    </article>
+  </section>
+
+  <section class="category-panel">
+    <article class="category-card">
+      <div class="category-head">
+        <span class="category-label">Ladies</span>
+        <span class="category-icon">●</span>
+      </div>
+      <div class="category-number">{{ ladies }}</div>
+    </article>
+    <article class="category-card">
+      <div class="category-head">
+        <span class="category-label">Men</span>
+        <span class="category-icon">●</span>
+      </div>
+      <div class="category-number">{{ men }}</div>
+    </article>
+    <article class="category-card">
+      <div class="category-head">
+        <span class="category-label">Young People</span>
+        <span class="category-icon">●</span>
+      </div>
+      <div class="category-number">{{ young_people }}</div>
+    </article>
+  </section>
+
+  <section class="dashboard-two-col">
+    <article class="panel">
+      <div class="panel-heading">
+        <span class="panel-title">Quick Actions</span>
+        <span class="panel-chip">Today</span>
+      </div>
+      <div class="quick-action-list">
+        <a class="quick-action" href="{{ url_for('people.add_person') }}">
+          <span class="quick-icon">＋</span>
+          <span>
+            <span class="quick-title">Register Person</span>
+            <small>Create a new attendance record</small>
+          </span>
+        </a>
+        <a class="quick-action" href="{{ url_for('people.list_people') }}">
+          <span class="quick-icon">☰</span>
+          <span>
+            <span class="quick-title">Search People</span>
+            <small>Review the current registration list</small>
+          </span>
+        </a>
+      </div>
+    </article>
+
+    <article class="panel">
+      <div class="panel-heading">
+        <span class="panel-title">Recent Registrations</span>
+        <a class="panel-link" href="{{ url_for('people.list_people') }}">Open list</a>
+      </div>
+      <div class="table-panel-wrap">
+        <table class="people-table compact-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Status</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for person in recent_registrations %}
+            <tr>
+              <td>{{ person.name }}</td>
+              <td>{{ person.category }}</td>
+              <td>
+                {% if person.registration_status == 'Registered' %}
+                <span class="status status-ok">{{ person.registration_status }}</span>
+                {% else %}
+                <span class="status status-pending">{{ person.registration_status }}</span>
+                {% endif %}
+              </td>
+              <td>{{ person.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="4">No recent registrations yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}Event Management{% endblock %}
+{% block content %}
+<div class="dashboard-card">
+  <div class="dashboard-header dashboard-header-row">
+    <div>
+      <div class="eyebrow">Events</div>
+      <h2>Event Management</h2>
+      <p class="dashboard-copy">Create event schedules, configure attendance days, and choose the active day for attendance.</p>
+    </div>
+  </div>
+
+  <section class="panel-group">
+    <article class="panel">
+      <div class="panel-heading">
+        <span class="panel-title">Create Event</span>
+      </div>
+      <form method="post" action="{{ url_for('admin.create_event') }}" class="stacked-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-grid two-col">
+          <label>
+            <span>Event Name</span>
+            <input type="text" name="name" class="form-input" placeholder="Home Builders 2026" required>
+          </label>
+          <label>
+            <span>Status</span>
+            <select name="status" class="form-input">
+              <option value="Upcoming">Upcoming</option>
+              <option value="Active" selected>Active</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </label>
+          <label>
+            <span>Start Date</span>
+            <input type="date" name="start_date" class="form-input" required>
+          </label>
+          <label>
+            <span>End Date</span>
+            <input type="date" name="end_date" class="form-input" required>
+          </label>
+        </div>
+        <button type="submit" class="button button-primary">Create Event</button>
+      </form>
+    </article>
+
+    <article class="panel">
+      <div class="panel-heading">
+        <span class="panel-title">Active Event</span>
+      </div>
+      {% if active_event %}
+      <div class="event-summary-card">
+        <h3>{{ active_event.name }}</h3>
+        <p>{{ active_event.start_date.strftime('%B %d, %Y') }} to {{ active_event.end_date.strftime('%B %d, %Y') }}</p>
+        <p><strong>Status:</strong> {{ active_event.status }}</p>
+      </div>
+      {% else %}
+      <p>No active event set yet.</p>
+      {% endif %}
+    </article>
+  </section>
+
+  <section class="panel">
+    <div class="panel-heading">
+      <span class="panel-title">Events</span>
+    </div>
+    {% if events %}
+      {% for event in events %}
+      <div class="event-card">
+        <div class="event-head">
+          <div>
+            <h3>{{ event.name }}</h3>
+            <p>{{ event.start_date.strftime('%B %d, %Y') }} – {{ event.end_date.strftime('%B %d, %Y') }}</p>
+          </div>
+          <span class="status-chip {% if event.status == 'Active' %}status-registered{% elif event.status == 'Completed' %}status-not-registered{% else %}status-pending{% endif %}">{{ event.status }}</span>
+        </div>
+
+        <form method="post" action="{{ url_for('admin.edit_event', event_id=event.id) }}" class="stacked-form small-gap">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="form-grid two-col">
+            <label>
+              <span>Event Name</span>
+              <input type="text" name="name" class="form-input" value="{{ event.name }}" required>
+            </label>
+            <label>
+              <span>Status</span>
+              <select name="status" class="form-input">
+                <option value="Upcoming" {% if event.status == 'Upcoming' %}selected{% endif %}>Upcoming</option>
+                <option value="Active" {% if event.status == 'Active' %}selected{% endif %}>Active</option>
+                <option value="Completed" {% if event.status == 'Completed' %}selected{% endif %}>Completed</option>
+              </select>
+            </label>
+            <label>
+              <span>Start Date</span>
+              <input type="date" name="start_date" class="form-input" value="{{ event.start_date.isoformat() }}" required>
+            </label>
+            <label>
+              <span>End Date</span>
+              <input type="date" name="end_date" class="form-input" value="{{ event.end_date.isoformat() }}" required>
+            </label>
+          </div>
+          <button type="submit" class="button button-secondary">Update Event</button>
+        </form>
+
+        <div class="event-days-block">
+          <h4>Attendance Days</h4>
+          <ul class="day-list">
+            {% for day in event.days %}
+            <li>
+              <span>Day {{ day.day_number }} — {{ day.date.strftime('%B %d, %Y') }}</span>
+              {% if event.active_day_id == day.id %}
+              <span class="status-chip status-registered">Active</span>
+              {% endif %}
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <form method="post" action="{{ url_for('admin.set_active_day', event_id=event.id) }}" class="stacked-form small-gap">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <label>
+            <span>Set Active Day</span>
+            <select name="day_id" class="form-input">
+              {% for day in event.days %}
+              <option value="{{ day.id }}" {% if event.active_day_id == day.id %}selected{% endif %}>Day {{ day.day_number }} — {{ day.date.strftime('%B %d, %Y') }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <button type="submit" class="button button-primary">Set Active Day</button>
+        </form>
+      </div>
+      {% endfor %}
+    {% else %}
+      <p>No events found.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

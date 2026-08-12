@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Export{% endblock %}
+{% block content %}
+<div class="dashboard-card">
+  <div class="dashboard-header">
+    <div>
+      <h2>Export Data</h2>
+      <p>Choose filters and file format, then download the registration list for reporting.</p>
+    </div>
+  </div>
+
+  <form method="post" class="search-form export-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label" for="category">Category</label>
+        <select id="category" name="category" class="form-control">
+          {% for option in categories %}
+          <option value="{{ option }}">{{ option }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="person_type">Person Type</label>
+        <select id="person_type" name="person_type" class="form-control">
+          {% for option in person_types %}
+          <option value="{{ option }}">{{ option }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="registration_status">Registration Status</label>
+        <select id="registration_status" name="registration_status" class="form-control">
+          {% for option in statuses %}
+          <option value="{{ option }}">{{ option }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="export_format">Export Format</label>
+        <select id="export_format" name="export_format" class="form-control">
+          {% for value, label in formats %}
+          <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <button type="submit" class="button">GENERATE EXPORT</button>
+  </form>
+</div>
+{% endblock %}

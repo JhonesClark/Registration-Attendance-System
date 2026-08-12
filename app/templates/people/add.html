@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}Add Person{% endblock %}
+{% block content %}
+<div class="auth-card">
+  <h2>Add Person</h2>
+  <p>Enter only the name, category, and person type for quick registration.</p>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+      {{ form.name.label(class="form-label") }}
+      {{ form.name(class="form-input") }}
+    </div>
+    <div class="form-group">
+      {{ form.category.label(class="form-label") }}
+      {{ form.category(class="form-control") }}
+    </div>
+    <div class="form-group">
+      {{ form.person_type.label(class="form-label") }}
+      {{ form.person_type(class="form-control") }}
+    </div>
+    <div class="form-actions">
+      {{ form.submit(class="button") }}
+      <a class="button button-secondary" href="{{ url_for('people.list_people') }}">CANCEL</a>
+    </div>
+  </form>
+
+  {% if duplicate_warning and duplicates %}
+  <div class="duplicate-card">
+    <h3>Person Already Exists</h3>
+    <p>The following record matches the name you entered:</p>
+    <table class="people-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for person in duplicates %}
+        <tr>
+          <td>{{ person.name }}</td>
+          <td>{{ person.category }}</td>
+          <td>{{ person.person_type }}</td>
+          <td>{{ person.registration_status }}</td>
+          <td><a class="button button-small" href="{{ url_for('people.view_person', id=person.id) }}">VIEW</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="form-actions">
+      <a class="button button-secondary" href="{{ url_for('people.add_person') }}">CANCEL</a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

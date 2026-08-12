@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}Category Management{% endblock %}
+{% block content %}
+<div class="dashboard-card">
+  <div class="dashboard-header dashboard-header-row">
+    <div>
+      <div class="eyebrow">Categories</div>
+      <h2>Category Management</h2>
+      <p class="dashboard-copy">Manage the categories used for registration and attendance.</p>
+    </div>
+    <div class="dashboard-actions-row">
+      <button class="button button-primary" id="open-add-category">+ Add Category</button>
+    </div>
+  </div>
+
+  <div class="table-panel-wrap">
+    <table class="people-table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for category in categories %}
+        <tr>
+          <td>{{ category.name }}</td>
+          <td><span class="status-chip {% if category.is_active %}status-registered{% else %}status-pending{% endif %}">{% if category.is_active %}Active{% else %}Inactive{% endif %}</span></td>
+          <td class="action-buttons">
+            <button class="button button-small" data-edit-category-id="{{ category.id }}" data-edit-category-name="{{ category.name }}">Edit</button>
+            {% if category.is_active %}
+            <form method="post" action="{{ url_for('admin.toggle_category', category_id=category.id) }}" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="button button-small button-secondary" type="submit">Deactivate</button>
+            </form>
+            {% else %}
+            <form method="post" action="{{ url_for('admin.toggle_category', category_id=category.id) }}" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="button button-small button-primary" type="submit">Reactivate</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="3">No categories available.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal-overlay" id="category-modal" aria-hidden="true">
+  <div class="modal-panel">
+    <div class="modal-header">
+      <h3 id="category-modal-title">Add Category</h3>
+      <button class="icon-button icon-button-plain" id="close-category-modal" aria-label="Close category modal">×</button>
+    </div>
+    <form id="category-form" method="post" action="{{ url_for('admin.add_category') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="category_id" id="category_id" value="">
+      <div class="modal-body">
+        <label>Category Name</label>
+        <input type="text" name="name" id="category-name" class="form-input" placeholder="Enter category name" required>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="button button-secondary" id="cancel-category">Cancel</button>
+        <button type="submit" class="button button-primary" id="category-submit-button">Add Category</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('category-modal');
+  const title = document.getElementById('category-modal-title');
+  const submit = document.getElementById('category-submit-button');
+  const form = document.getElementById('category-form');
+  const nameField = document.getElementById('category-name');
+  const idField = document.getElementById('category_id');
+
+  function openModal(mode, id = '', name = '') {
+    modal.classList.add('is-visible');
+    modal.setAttribute('aria-hidden', 'false');
+    if (mode === 'edit') {
+      title.textContent = 'Edit Category';
+      submit.textContent = 'Save Category';
+      form.action = '{{ url_for('admin.edit_category') }}';
+      idField.value = id;
+      nameField.value = name;
+    } else {
+      title.textContent = 'Add Category';
+      submit.textContent = 'Add Category';
+      form.action = '{{ url_for('admin.add_category') }}';
+      idField.value = '';
+      nameField.value = '';
+    }
+    nameField.focus();
+  }
+
+  function closeModal() {
+    modal.classList.remove('is-visible');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  document.getElementById('open-add-category').addEventListener('click', () => openModal('add'));
+  document.getElementById('close-category-modal').addEventListener('click', closeModal);
+  document.getElementById('cancel-category').addEventListener('click', closeModal);
+
+  document.querySelectorAll('[data-edit-category-id]').forEach((button) => {
+    button.addEventListener('click', () => {
+      openModal('edit', button.dataset.editCategoryId, button.dataset.editCategoryName);
+    });
+  });
+});
+</script>
+{% endblock %}

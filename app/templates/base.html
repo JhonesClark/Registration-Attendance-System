@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="BCMBC Home Builders Registration System">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}Home Builders Registration System | BCMBC{% endblock %}</title>
+    <script>
+      (function(){
+        try {
+          var t = localStorage.getItem('hb_theme') || 'system';
+          if (t === 'system') {
+            var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+          } else {
+            document.documentElement.setAttribute('data-theme', t);
+          }
+        } catch(e){}
+      })();
+    </script>
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='img/BCMBC.jpg') }}?v=1">
+    <link rel="shortcut icon" type="image/jpeg" href="{{ url_for('static', filename='img/BCMBC.jpg') }}?v=1">
+    <link rel="stylesheet" href="/static/css/style.css">
+  </head>
+  <body class="{% block body_class %}{% endblock %}">
+    <div class="app-shell">
+      <div class="app-sidebar-backdrop"></div>
+      {% if current_user.is_authenticated %}
+      <aside class="app-sidebar">
+        <div class="sidebar-brand">
+          <span class="brand-icon brand-icon-logo">
+            <img src="{{ url_for('static', filename='img/BCMBC.jpg') }}" alt="Butuan City Missionary Baptist Church logo" class="brand-logo-img">
+          </span>
+          <div>
+            <div class="brand-title">HOME BUILDERS</div>
+            <div class="brand-subtitle">Registration System</div>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav">
+          {% if current_user.role == 'ADMIN' %}
+          <div class="nav-label">ADMIN</div>
+          <a class="nav-link{% if request.endpoint == 'admin.dashboard' %} active{% endif %}" href="{{ url_for('admin.dashboard') }}">
+            <span class="nav-icon">⌂</span>
+            <span>Dashboard</span>
+          </a>
+          <a class="nav-link{% if request.endpoint == 'people.list_people' %} active{% endif %}" href="{{ url_for('people.list_people') }}">
+            <span class="nav-icon">☉</span>
+            <span>People</span>
+          </a>
+          <a class="nav-link{% if request.endpoint == 'people.add_person' %} active{% endif %}" href="{{ url_for('people.add_person') }}">
+            <span class="nav-icon">＋</span>
+            <span>Registrations</span>
+          </a>
+          <a class="nav-link{% if request.endpoint == 'admin.attendance' %} active{% endif %}" href="{{ url_for('admin.attendance') }}">
+            <span class="nav-icon">✔</span>
+            <span>Attendance</span>
+          </a>
+          <a class="nav-link{% if request.endpoint == 'admin.events' %} active{% endif %}" href="{{ url_for('admin.events') }}">
+            <span class="nav-icon">◫</span>
+            <span>Event Management</span>
+          </a>
+          <a class="nav-link{% if request.endpoint == 'admin.export_page' %} active{% endif %}" href="{{ url_for('admin.export_page') }}">
+            <span class="nav-icon">⇩</span>
+            <span>Reports</span>
+          </a>
+          <a class="nav-link{% if request.endpoint == 'admin.import_page' %} active{% endif %}" href="{{ url_for('admin.import_page') }}">
+            <span class="nav-icon">⇄</span>
+            <span>Import / Export</span>
+          </a>
+          <a class="nav-link{% if request.endpoint == 'admin.activity' %} active{% endif %}" href="{{ url_for('admin.activity') }}">
+            <span class="nav-icon">◔</span>
+            <span>Activity Log</span>
+          </a>
+          <a class="nav-link{% if request.endpoint == 'admin.categories' %} active{% endif %}" href="{{ url_for('admin.categories') }}">
+            <span class="nav-icon">⚙</span>
+            <span>Categories</span>
+          </a>
+          <a class="nav-link" href="{{ url_for('profile.view_profile') }}">
+            <span class="nav-icon">👤</span>
+            <span>Profile</span>
+          </a>
+          <a class="nav-link" href="{{ url_for('profile.settings') }}">
+            <span class="nav-icon">⚙</span>
+            <span>Settings</span>
+          </a>
+          <a class="nav-link logout-link" href="{{ url_for('auth.logout') }}">
+            <span class="nav-icon">↵</span>
+            <span>Logout</span>
+          </a>
+          {% elif current_user.role == 'ATTENDANCE' %}
+          <div class="nav-label">ATTENDANCE</div>
+          <a class="nav-link{% if request.endpoint == 'attendance.dashboard' %} active{% endif %}" href="{{ url_for('attendance.dashboard') }}">
+            <span class="nav-icon">⌂</span>
+            <span>Dashboard</span>
+          </a>
+          <a class="nav-link" href="{{ url_for('profile.view_profile') }}">
+            <span class="nav-icon">👤</span>
+            <span>Profile</span>
+          </a>
+          <a class="nav-link" href="{{ url_for('profile.settings') }}">
+            <span class="nav-icon">⚙</span>
+            <span>Settings</span>
+          </a>
+          <a class="nav-link logout-link" href="{{ url_for('auth.logout') }}">
+            <span class="nav-icon">↵</span>
+            <span>Logout</span>
+          </a>
+          {% else %}
+          <div class="nav-label">SECRETARY</div>
+          <a class="nav-link{% if request.endpoint == 'secretary.dashboard' %} active{% endif %}" href="{{ url_for('secretary.dashboard') }}">
+            <span class="nav-icon">⌂</span>
+            <span>Dashboard</span>
+          </a>
+          <a class="nav-link{% if request.endpoint == 'people.add_person' %} active{% endif %}" href="{{ url_for('people.add_person') }}">
+            <span class="nav-icon">＋</span>
+            <span>Register Person</span>
+          </a>
+          <a class="nav-link{% if request.endpoint == 'people.list_people' %} active{% endif %}" href="{{ url_for('people.list_people') }}">
+            <span class="nav-icon">☉</span>
+            <span>People</span>
+          </a>
+          <a class="nav-link{% if request.endpoint == 'admin.activity' %} active{% endif %}" href="{{ url_for('admin.activity') }}">
+            <span class="nav-icon">◔</span>
+            <span>Activity Log</span>
+          </a>
+          <a class="nav-link" href="{{ url_for('profile.view_profile') }}">
+            <span class="nav-icon">👤</span>
+            <span>Profile</span>
+          </a>
+          <a class="nav-link" href="{{ url_for('profile.settings') }}">
+            <span class="nav-icon">⚙</span>
+            <span>Settings</span>
+          </a>
+          <a class="nav-link logout-link" href="{{ url_for('auth.logout') }}">
+            <span class="nav-icon">↵</span>
+            <span>Logout</span>
+          </a>
+          {% endif %}
+        </nav>
+      </aside>
+      {% endif %}
+
+      <div class="main-content">
+      {% if current_user.is_authenticated %}
+      <header class="topbar">
+        <div class="topbar-row">
+          <div class="topbar-left">
+            <button class="icon-button" aria-label="Toggle sidebar">☰</button>
+            <div>
+              <div class="page-title">
+                {% if current_user.role == 'ADMIN' %}
+                Admin Dashboard
+                {% elif current_user.role == 'ATTENDANCE' %}
+                Attendance Dashboard
+                {% else %}
+                Secretary Dashboard
+                {% endif %}
+              </div>
+              <div class="page-subtitle">
+                {% if current_user.role == 'ADMIN' %}
+                Welcome back, Admin! Monitor registrations and attendance in real time.
+                {% elif current_user.role == 'ATTENDANCE' %}
+                Track the attendance list and mark registered people present.
+                {% else %}
+                Welcome back! Manage registrations and people.
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="profile-area">
+            <div class="notif-wrap">
+              <button id="notification-button" class="icon-button icon-button-plain" aria-haspopup="true" aria-expanded="false" aria-label="Notifications">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M15 17H9a3 3 0 006 0z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 8a6 6 0 10-12 0c0 7-3 7-3 7h18s-3 0-3-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span id="notification-badge" class="notif-badge hidden">0</span>
+              </button>
+              <div id="notification-dropdown" class="notification-dropdown" role="menu" aria-hidden="true">
+                <div class="notification-dropdown-head"><strong>Notifications</strong><button id="mark-read" class="icon-button-plain mark-read-btn" aria-label="Mark all as read">Mark all as read</button></div>
+                <div id="notification-list" class="notification-list">
+                  <div class="empty-state hidden" id="empty-notifs"><div class="empty-state-icon">🔔</div><h3>No notifications</h3><p class="empty-note">Notifications will appear here.</p></div>
+                </div>
+              </div>
+            </div>
+            <button class="profile-button" aria-haspopup="true" aria-expanded="false">
+              <span class="avatar">{{ current_user.username[:2].upper() }}</span>
+              <div class="profile-copy">
+                <div class="profile-name">{% if current_user.role == 'ADMIN' %}Home Builders{% else %}{{ current_user.username }}{% endif %}</div>
+                <div class="profile-role">{% if current_user.role == 'ADMIN' %}Admin{% else %}Secretary{% endif %}</div>
+              </div>
+              <span class="profile-caret">⌄</span>
+            </button>
+            <div class="profile-menu" role="menu" aria-hidden="true">
+              <div class="profile-menu-head">
+                <div class="avatar">{{ current_user.username[:2].upper() }}</div>
+                <div style="margin-left:0.6rem">
+                  <div style="font-weight:900">{{ current_user.username }}</div>
+                    <div style="color:var(--muted);font-size:0.85rem">{% if current_user.role == 'ADMIN' %}Home Builders{% else %}Secretary{% endif %}</div>
+                    <div style="margin-top:0.25rem;color:var(--muted);font-size:0.85rem"><span class="status-dot" aria-hidden="true"></span>Active</div>
+                </div>
+              </div>
+              <nav>
+                <a class="profile-menu-item" href="{{ url_for('profile.view_profile') }}">Profile</a>
+                <a class="profile-menu-item" href="{{ url_for('profile.settings') }}">Settings</a>
+                <a class="profile-menu-item logout-link" href="{{ url_for('auth.logout') }}">Logout</a>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </header>
+      {% endif %}
+
+        <main class="page-content">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+          <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+          {% endif %}
+          {% endwith %}
+          {% block content %}{% endblock %}
+        </main>
+      </div>
+    </div>
+    <div id="auth-overlay" class="auth-overlay" aria-hidden="true">
+      <div class="overlay-card">
+        <div class="overlay-logo-frame">
+          <img src="{{ url_for('static', filename='img/BCMBC.jpg') }}" alt="Butuan City Missionary Baptist Church logo" class="overlay-logo-img">
+        </div>
+        <div class="overlay-spinner">
+          <div class="spinner-ring"></div>
+          <div class="spinner-check">✓</div>
+        </div>
+        <p id="overlay-title" class="overlay-title">Logging in...</p>
+        <p id="overlay-subtitle" class="overlay-subtitle">Please wait...</p>
+        <div class="pulse-bars">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.min.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/auth.js"></script>
+  </body>
+</html>

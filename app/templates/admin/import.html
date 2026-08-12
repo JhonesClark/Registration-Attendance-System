@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}Import Data{% endblock %}
+{% block content %}
+<div class="dashboard-card import-card">
+  <div class="dashboard-header">
+    <div>
+      <h2>Import People from Excel</h2>
+      <p>Upload a formatted .xlsx workbook and preview validation before importing.</p>
+    </div>
+    <div class="dashboard-actions-row">
+      <a class="button" href="{{ url_for('admin.dashboard') }}">BACK TO DASHBOARD</a>
+      <a class="button button-secondary" href="{{ url_for('admin.export_page') }}">EXPORT DATA</a>
+    </div>
+  </div>
+
+  {% if import_errors %}
+  <div class="import-alert import-alert--danger">
+    <h4>Import Errors</h4>
+    <ul>
+      {% for error in import_errors %}
+      <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if import_warnings %}
+  <div class="import-alert import-alert--warning">
+    <h4>Import Warnings</h4>
+    <ul>
+      {% for warning in import_warnings %}
+      <li>{{ warning }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if imported_count is not none %}
+  <div class="import-alert import-alert--success">
+    <p>{{ imported_count }} new people imported successfully.</p>
+  </div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" class="search-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-group">
+      <label class="form-label" for="import_file">Choose Excel file</label>
+      <input type="file" id="import_file" name="import_file" accept=".xlsx" class="form-control" />
+    </div>
+    <button type="submit" name="preview" class="button">PREVIEW IMPORT</button>
+  </form>
+
+  {% if preview_rows %}
+  <div class="import-preview">
+    <h3>Import Preview</h3>
+    <p class="muted">The data below is ready for import once validation passes.</p>
+
+    {% if import_ready %}
+    <form method="post" class="search-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <textarea name="import_data" hidden>{{ preview_rows | tojson }}</textarea>
+      <button type="submit" name="confirm_import" class="button">CONFIRM IMPORT</button>
+    </form>
+    {% else %}
+    <p class="muted">Resolve the errors or warnings above before confirming the import.</p>
+    {% endif %}
+
+    <div class="people-table-wrapper">
+      <table class="people-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Person Type</th>
+            <th>Registration Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in preview_rows %}
+          <tr>
+            <td>{{ row['Name'] }}</td>
+            <td>{{ row['Category'] }}</td>
+            <td>{{ row['Person Type'] }}</td>
+            <td>{{ row['Registration Status'] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

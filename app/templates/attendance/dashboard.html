@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}Attendance Dashboard{% endblock %}
+{% block content %}
+<div class="dashboard-card">
+  <div class="dashboard-header dashboard-header-row">
+    <div>
+      <div class="eyebrow">Attendance</div>
+      <h2>Attendance Dashboard</h2>
+      <p class="dashboard-copy">Monitor today's attendance in real time.</p>
+    </div>
+    <div class="dashboard-actions-row">
+      <a class="button button-primary" href="{{ url_for('attendance.dashboard') }}">Refresh</a>
+    </div>
+  </div>
+
+  <section class="kpi-grid">
+    <article class="kpi-card kpi-card-success">
+      <div class="kpi-card-header">
+        <span class="kpi-card-title">Present</span>
+        <span class="kpi-icon">✓</span>
+      </div>
+      <div class="kpi-card-value">{{ metrics.present }}</div>
+      <div class="kpi-card-foot">Registered people marked present</div>
+    </article>
+
+    <article class="kpi-card kpi-card-danger">
+      <div class="kpi-card-header">
+        <span class="kpi-card-title">Absent</span>
+        <span class="kpi-icon">✕</span>
+      </div>
+      <div class="kpi-card-value">{{ metrics.absent }}</div>
+      <div class="kpi-card-foot">Registered people not yet present</div>
+    </article>
+  </section>
+
+  <section class="search-panel">
+    <form method="get" class="search-form attendance-search-form">
+      <input type="text" name="search" value="{{ search }}" placeholder="Search registered person..." class="form-input" />
+      <select name="category" class="form-control">
+        <option value="">All categories</option>
+        {% for category in metrics.categories %}
+        <option value="{{ category.name }}" {% if selected_category == category.name %}selected{% endif %}>{{ category.name }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="button">SEARCH</button>
+    </form>
+  </section>
+
+  <div class="people-table-wrapper attendance-table-wrapper">
+    <table class="people-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Person Type</th>
+          <th>Attendance</th>
+          <th>Time</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for person in people %}
+        {% set attendance = attendance_by_person.get(person.id) %}
+        <tr>
+          <td data-label="Name">{{ person.name }}</td>
+          <td data-label="Category">{{ person.category }}</td>
+          <td data-label="Person Type">{{ person.person_type }}</td>
+          <td data-label="Attendance">
+            {% if attendance %}
+            <span class="status-chip status-registered">Present</span>
+            {% else %}
+            <span class="status-chip status-not-registered">Absent</span>
+            {% endif %}
+          </td>
+          <td data-label="Time">{{ attendance.attendance_time.strftime('%I:%M %p') if attendance else '—' }}</td>
+          <td data-label="Action" class="action-buttons">
+            {% if attendance %}
+            <button class="button button-small button-secondary" disabled>Already Recorded</button>
+            {% else %}
+            <form method="post" action="{{ url_for('attendance.record_attendance', person_id=person.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="button button-small button-primary" type="submit">MARK PRESENT</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7">No registered people found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

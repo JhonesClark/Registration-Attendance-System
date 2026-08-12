@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}BCMBC | Home Builders Registration System{% endblock %}
+{% block body_class %}login-page{% endblock %}
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card auth-center-card">
+    <div class="auth-hero">
+      <div class="login-logo-frame">
+        <img src="{{ url_for('static', filename='img/BCMBC.jpg') }}" alt="Butuan City Missionary Baptist Church logo" class="login-logo-img">
+      </div>
+      <span class="auth-badge">Hello!</span>
+      <h2>HOME BUILDERS</h2>
+      <div class="auth-subtitle">REGISTRATION SYSTEM</div>
+      <p>Please enter your credentials to continue.</p>
+    </div>
+    <form id="login-form" method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="form-group">
+        {{ form.username.label(class="form-label") }}
+        {{ form.username(class="form-input" + (' error' if form.username.errors else ''), autocomplete="username") }}
+        {% if form.username.errors %}
+          <div class="field-message error-message shake-message">{{ form.username.errors[0] }}</div>
+        {% elif auth_error == 'email' %}
+          <div class="field-message error-message shake-message">Invalid email</div>
+        {% endif %}
+      </div>
+      <div class="form-group password-group">
+        {{ form.password.label(class="form-label") }}
+        <div class="password-field">
+          {{ form.password(class="form-input password-input" + (' error' if form.password.errors else ''), autocomplete="current-password") }}
+          <button type="button" class="password-toggle" aria-label="Toggle password visibility">
+            <span class="password-icon"></span>
+          </button>
+        </div>
+        {% if form.password.errors %}
+          <div class="field-message error-message shake-message">{{ form.password.errors[0] }}</div>
+        {% elif auth_error == 'password' %}
+          <div class="field-message error-message shake-message">Invalid password</div>
+        {% endif %}
+      </div>
+      <div class="form-actions form-actions-center">
+        {{ form.submit(class="button button-primary button-wide", id="login-button") }}
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

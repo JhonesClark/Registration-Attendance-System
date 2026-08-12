@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="dashboard-card admin-dashboard" id="admin-dashboard">
+  <div class="dashboard-header dashboard-header-row">
+    <div>
+      <div class="eyebrow">Overview</div>
+      <h2>Admin Dashboard</h2>
+      <p class="dashboard-copy">Track overall registration performance and live activity.</p>
+    </div>
+    <div class="dashboard-actions-row">
+      <a class="button button-primary" href="{{ url_for('people.add_person') }}">Add Registration</a>
+      <a class="button button-secondary" href="{{ url_for('people.list_people') }}">Search People</a>
+      <a class="button button-ghost" href="{{ url_for('admin.activity') }}">Activity Log</a>
+    </div>
+  </div>
+
+  <section class="kpi-grid">
+    <article class="kpi-card">
+      <div class="kpi-card-header">
+        <span class="kpi-card-title">Total People</span>
+        <span class="kpi-icon">◎</span>
+      </div>
+      <div class="kpi-card-value" id="metric-total">{{ total_people }}</div>
+      <div class="kpi-card-foot">All active registrations</div>
+    </article>
+
+    <article class="kpi-card kpi-card-success">
+      <div class="kpi-card-header">
+        <span class="kpi-card-title">Registered</span>
+        <span class="kpi-icon">✓</span>
+      </div>
+      <div class="kpi-card-value" id="metric-registered">{{ registered }}</div>
+      <div class="kpi-card-foot">Complete registrations</div>
+    </article>
+
+    <article class="kpi-card kpi-card-warning">
+      <div class="kpi-card-header">
+        <span class="kpi-card-title">Not Registered</span>
+        <span class="kpi-icon">!</span>
+      </div>
+      <div class="kpi-card-value" id="metric-not-registered">{{ not_registered }}</div>
+      <div class="kpi-card-foot">Pending completion</div>
+    </article>
+  </section>
+
+  <section class="progress-panel">
+    <div class="progress-header">
+      <span>Registration progress</span>
+      <span id="progress-count">{{ registered }} / {{ total_people }}</span>
+    </div>
+    <div class="progress-track">
+      <div id="progress-fill" class="progress-fill" style="width: {{ progress_pct }}%;"></div>
+    </div>
+  </section>
+
+  <section class="category-panel">
+    <article class="category-card">
+      <div class="category-head">
+        <span class="category-label">Ladies</span>
+        <span class="category-icon">●</span>
+      </div>
+      <div class="category-number" id="metric-ladies">{{ ladies }}</div>
+    </article>
+    <article class="category-card">
+      <div class="category-head">
+        <span class="category-label">Men</span>
+        <span class="category-icon">●</span>
+      </div>
+      <div class="category-number" id="metric-men">{{ men }}</div>
+    </article>
+    <article class="category-card">
+      <div class="category-head">
+        <span class="category-label">Young People</span>
+        <span class="category-icon">●</span>
+      </div>
+      <div class="category-number" id="metric-young-people">{{ young_people }}</div>
+    </article>
+    <article class="category-card">
+      <div class="category-head">
+        <span class="category-label">Members</span>
+        <span class="category-icon">●</span>
+      </div>
+      <div class="category-number" id="metric-members">{{ members }}</div>
+    </article>
+    <article class="category-card">
+      <div class="category-head">
+        <span class="category-label">Visitors</span>
+        <span class="category-icon">●</span>
+      </div>
+      <div class="category-number" id="metric-visitors">{{ visitors }}</div>
+    </article>
+  </section>
+
+  <section class="dashboard-two-col">
+    <article class="panel">
+      <div class="panel-heading">
+        <span class="panel-title">New Registration</span>
+        <span class="panel-chip">Live</span>
+      </div>
+      <div class="live-highlight" id="live-registration">
+        <span>Waiting for new registrations...</span>
+      </div>
+    </article>
+
+    <article class="panel">
+      <div class="panel-heading">
+        <span class="panel-title">Recent Activity</span>
+        <a class="panel-link" href="{{ url_for('admin.activity') }}">View all</a>
+      </div>
+      <ul class="activity-list compact" id="activity-list">
+        {% for activity in activities %}
+        <li>
+          <span class="activity-time">{{ activity.created_at.strftime('%I:%M %p') }}</span>
+          <span class="activity-description">{{ activity.description }}</span>
+        </li>
+        {% else %}
+        <li class="muted">No activity yet.</li>
+        {% endfor %}
+      </ul>
+    </article>
+  </section>
+</div>
+{% endblock %}

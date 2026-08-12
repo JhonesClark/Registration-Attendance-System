@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}People List{% endblock %}
+{% block content %}
+<div class="dashboard-card">
+  <div class="people-header">
+    <div>
+      <h2>People</h2>
+      <p>Search and filter the registration list quickly.</p>
+    </div>
+    <div class="actions">
+      <a class="button" href="{{ url_for('people.add_person') }}">ADD PERSON</a>
+    </div>
+  </div>
+
+  <form method="get" class="search-form">
+    <input type="text" name="search" value="{{ search }}" placeholder="Search by name" class="form-input" />
+    <select name="category" class="form-control">
+      <option value="">Categories</option>
+      {% for cat in categories %}
+      <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+      {% endfor %}
+    </select>
+    <select name="person_type" class="form-control">
+      <option value="">Person types</option>
+      <option value="Member" {% if selected_person_type == 'Member' %}selected{% endif %}>Member</option>
+      <option value="Visitor" {% if selected_person_type == 'Visitor' %}selected{% endif %}>Visitor</option>
+    </select>
+    <select name="registration_status" class="form-control">
+      <option value="">Status</option>
+      <option value="Registered" {% if selected_registration_status == 'Registered' %}selected{% endif %}>Registered</option>
+      <option value="Not Registered" {% if selected_registration_status == 'Not Registered' %}selected{% endif %}>Not Registered</option>
+    </select>
+    <button type="submit" class="button">SEARCH PEOPLE</button>
+  </form>
+
+  <div class="people-table-wrapper">
+    <table class="people-table">
+      <thead>
+        <tr>
+          <th>No.</th>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Person Type</th>
+          <th>Registration Status</th>
+          <th>Registered At</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for person in people %}
+        <tr>
+          <td data-label="No.">{{ loop.index }}</td>
+          <td data-label="Name"><a class="person-name-link" href="{{ url_for('people.view_person', id=person.id) }}" aria-label="View profile for {{ person.name }}">{{ person.name }}</a></td>
+          <td data-label="Category">{{ person.category }}</td>
+          <td data-label="Person Type">{{ person.person_type }}</td>
+          <td data-label="Registration Status"><span class="status-chip {% if person.registration_status == 'Registered' %}status-registered{% else %}status-not-registered{% endif %}">{{ person.registration_status }}</span></td>
+          <td data-label="Registered At">{{ person.registered_at.strftime('%Y-%m-%d %H:%M') if person.registered_at else '-' }}</td>
+          <td data-label="Actions" class="action-buttons">
+            <a class="button button-small" href="{{ url_for('people.view_person', id=person.id) }}">View</a>
+            {% if person.registration_status != 'Registered' %}
+            <form method="post" action="{{ url_for('people.register_person', id=person.id) }}" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="button button-small" type="submit">Register</button>
+            </form>
+            {% endif %}
+            <a class="button button-small button-secondary" href="{{ url_for('people.edit_person', id=person.id) }}">Edit</a>
+            {% if current_user.role == 'ADMIN' %}
+            <form method="post" action="{{ url_for('people.delete_person', id=person.id) }}" style="display:inline" onsubmit="return confirm('Confirm delete this person?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="button button-small button-secondary" type="submit">Delete</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td data-label="Result" colspan="7">No people found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

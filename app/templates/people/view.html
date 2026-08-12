@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}View Person{% endblock %}
+{% block content %}
+<div class="dashboard-card">
+  <div class="people-header">
+    <div>
+      <h2>{{ person.name }}</h2>
+      <p>Details for this person and registration status.</p>
+    </div>
+    <div class="actions">
+      <a class="button" href="{{ url_for('people.list_people') }}">BACK TO LIST</a>
+    </div>
+  </div>
+
+  <div class="people-table-wrapper">
+    <table class="people-table">
+      <tbody>
+        <tr>
+          <th>Name</th>
+          <td>{{ person.name }}</td>
+        </tr>
+        <tr>
+          <th>Category</th>
+          <td>{{ person.category }}</td>
+        </tr>
+        <tr>
+          <th>Person Type</th>
+          <td>{{ person.person_type }}</td>
+        </tr>
+        <tr>
+          <th>Registration Status</th>
+          <td><span class="status-chip {% if person.registration_status == 'Registered' %}status-registered{% else %}status-not-registered{% endif %}">{{ person.registration_status }}</span></td>
+        </tr>
+        <tr>
+          <th>Registered At</th>
+          <td>{{ person.registered_at.strftime('%Y-%m-%d %H:%M') if person.registered_at else 'Not yet registered' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  {% if person.registration_status != 'Registered' %}
+  <form method="post" action="{{ url_for('people.register_person', id=person.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="button" type="submit">REGISTER PERSON</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

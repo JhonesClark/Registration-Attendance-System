@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Edit Person{% endblock %}
+{% block content %}
+<div class="auth-card">
+  <h2>Edit Person</h2>
+  <p>Update the person details without changing the registration flow.</p>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+      {{ form.name.label(class="form-label") }}
+      {{ form.name(class="form-input") }}
+    </div>
+    <div class="form-group">
+      {{ form.category.label(class="form-label") }}
+      {{ form.category(class="form-control") }}
+    </div>
+    <div class="form-group">
+      {{ form.person_type.label(class="form-label") }}
+      {{ form.person_type(class="form-control") }}
+    </div>
+    <div class="form-actions">
+      {{ form.submit(class="button") }}
+      <a class="button button-secondary" href="{{ url_for('people.view_person', id=person.id) }}">CANCEL</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

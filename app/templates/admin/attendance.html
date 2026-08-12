@@ -1,0 +1,346 @@
+{% extends 'base.html' %}
+{% block title %}Attendance Monitoring{% endblock %}
+{% block content %}
+<div class="dashboard-card">
+  <div class="dashboard-header dashboard-header-row">
+    <div>
+      <div class="eyebrow">Attendance</div>
+      <h2>Attendance Monitoring</h2>
+      <div class="eyebrow">Today's Attendance</div>
+      <p class="dashboard-copy">Monitor today's attendance, filter instantly, and export the current results.</p>
+    </div>
+    <div class="dashboard-actions-row">
+      <button class="button button-primary" id="open-export-modal" type="button">Export Attendance</button>
+    </div>
+  </div>
+
+  <section class="attendance-summary-grid">
+    <article class="kpi-card">
+      <div class="kpi-card-header">
+        <span class="kpi-card-title">Total Registered</span>
+        <span class="kpi-icon">◎</span>
+      </div>
+      <div class="kpi-card-value" id="summary-total-registered">{{ summary.total_registered }}</div>
+      <div class="kpi-card-foot">Current filtered registrations</div>
+    </article>
+
+    <article class="kpi-card kpi-card-success">
+      <div class="kpi-card-header">
+        <span class="kpi-card-title">Present</span>
+        <span class="kpi-icon">✓</span>
+      </div>
+      <div class="kpi-card-value" id="summary-present">{{ summary.present }}</div>
+      <div class="kpi-card-foot">Checked in for today</div>
+    </article>
+
+    <article class="kpi-card kpi-card-danger">
+      <div class="kpi-card-header">
+        <span class="kpi-card-title">Absent</span>
+        <span class="kpi-icon">✕</span>
+      </div>
+      <div class="kpi-card-value" id="summary-absent">{{ summary.absent }}</div>
+      <div class="kpi-card-foot">Still not recorded</div>
+    </article>
+
+  </section>
+
+  <section class="attendance-filter-panel">
+    <div class="attendance-filter-row">
+      <div class="attendance-filter-field attendance-search-field">
+        <label for="attendance-search">Search</label>
+        <input id="attendance-search" class="form-input" type="text" value="{{ search }}" placeholder="Search by name..." />
+      </div>
+
+      <div class="attendance-filter-field">
+        <label for="attendance-category">Category</label>
+        <select id="attendance-category" class="form-input">
+          {% for category_name in categories %}
+          <option value="{{ category_name }}" {% if category_name == selected_category %}selected{% endif %}>{{ category_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="attendance-filter-field">
+        <label for="attendance-status">Status</label>
+        <select id="attendance-status" class="form-input">
+          <option value="All" {% if selected_status == 'All' %}selected{% endif %}>All</option>
+          <option value="Present" {% if selected_status == 'Present' %}selected{% endif %}>Present</option>
+          <option value="Absent" {% if selected_status == 'Absent' %}selected{% endif %}>Absent</option>
+        </select>
+      </div>
+
+      <div class="attendance-filter-actions">
+        <button id="clear-filters" type="button" class="button button-secondary">Clear Filters</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="people-table-wrapper attendance-table-wrapper">
+    <table class="people-table attendance-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Person Type</th>
+          <th>Registration Status</th>
+          <th>Attendance</th>
+          <th>Time</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="attendance-body">
+        {% if rows %}
+          {% for row in rows %}
+          <tr data-person-id="{{ row.person_id }}">
+            <td data-label="Name">{{ row.name }}</td>
+            <td data-label="Category">{{ row.category }}</td>
+            <td data-label="Person Type">{{ row.person_type }}</td>
+            <td data-label="Registration Status">
+              <span class="status-chip {% if row.registration_status == 'Registered' %}status-registered{% else %}status-pending{% endif %}">{{ row.registration_status }}</span>
+            </td>
+            <td data-label="Attendance">
+              {% if row.attendance_status == 'Present' %}
+              <span class="status-chip status-registered">Present</span>
+              {% else %}
+              <span class="status-chip status-not-registered">Absent</span>
+              {% endif %}
+            </td>
+            <td data-label="Time">{{ row.attendance_time }}</td>
+            <td data-label="Action">
+              <form class="attendance-status-form" data-person-id="{{ row.person_id }}">
+                <input type="hidden" name="person_id" value="{{ row.person_id }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <select name="status" class="form-input attendance-status-select">
+                  <option value="Present" {% if row.attendance_status == 'Present' %}selected{% endif %}>Present</option>
+                  <option value="Absent" {% if row.attendance_status == 'Absent' %}selected{% endif %}>Absent</option>
+                </select>
+                <button class="button button-small button-primary" type="submit">Update</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="8">
+              <div class="empty-state">
+                <div class="empty-state-icon">📋</div>
+                <h3>No attendance records found.</h3>
+                <p>Try changing your filters or search term.</p>
+              </div>
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal-overlay" id="attendance-export-modal" aria-hidden="true">
+  <div class="modal-panel">
+    <div class="modal-header">
+      <h3>Export Attendance</h3>
+      <button class="icon-button icon-button-plain" id="close-export-modal" aria-label="Close export modal">×</button>
+    </div>
+    <div class="modal-body">
+      <p>Choose a format for the current filtered attendance report.</p>
+      <div class="export-options">
+        <a id="export-xlsx" class="button button-primary" href="{{ url_for('admin.export_attendance', format='xlsx', category=selected_category, status=selected_status, search=search) }}">Excel (.xlsx)</a>
+        <a id="export-docx" class="button button-secondary" href="{{ url_for('admin.export_attendance', format='docx', category=selected_category, status=selected_status, search=search) }}">Word (.docx)</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const csrfToken = '{{ csrf_token() }}';
+  const state = {
+    category: '{{ selected_category }}',
+    status: '{{ selected_status }}',
+    search: '{{ search }}'
+  };
+
+  const searchInput = document.getElementById('attendance-search');
+  const categorySelect = document.getElementById('attendance-category');
+  const statusSelect = document.getElementById('attendance-status');
+  const clearFiltersBtn = document.getElementById('clear-filters');
+  const exportModal = document.getElementById('attendance-export-modal');
+  const openExportModal = document.getElementById('open-export-modal');
+  const closeExportModal = document.getElementById('close-export-modal');
+
+  function buildExportUrl(format) {
+    const params = new URLSearchParams({
+      format,
+      category: state.category,
+      status: state.status,
+      search: state.search,
+      all_results: 'false'
+    });
+    return '{{ url_for("admin.export_attendance") }}?' + params.toString();
+  }
+
+  function updateExportLinks() {
+    const xlsxLink = document.getElementById('export-xlsx');
+    const docxLink = document.getElementById('export-docx');
+    if (xlsxLink) xlsxLink.href = buildExportUrl('xlsx');
+    if (docxLink) docxLink.href = buildExportUrl('docx');
+  }
+
+  function renderSummary(summary) {
+    document.getElementById('summary-total-registered').textContent = summary.total_registered ?? 0;
+    document.getElementById('summary-present').textContent = summary.present ?? 0;
+    document.getElementById('summary-absent').textContent = summary.absent ?? 0;
+  }
+
+  if (typeof socket !== 'undefined' && socket && socket.on) {
+    socket.on('attendance_update', () => {
+      refreshAttendance();
+    });
+  }
+
+  function renderRows(rows) {
+    const tbody = document.getElementById('attendance-body');
+    if (!tbody) return;
+
+    if (!rows || rows.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8">
+            <div class="empty-state">
+              <div class="empty-state-icon">📋</div>
+              <h3>No attendance records found.</h3>
+              <p>Try changing your filters or search term.</p>
+            </div>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = rows.map((row) => `
+      <tr data-person-id="${row.person_id}">
+        <td data-label="Name">${row.name}</td>
+        <td data-label="Category">${row.category}</td>
+        <td data-label="Person Type">${row.person_type}</td>
+        <td data-label="Registration Status">
+          <span class="status-chip ${row.registration_status === 'Registered' ? 'status-registered' : 'status-pending'}">${row.registration_status}</span>
+        </td>
+        <td data-label="Attendance">
+          ${row.attendance_status === 'Present'
+            ? '<span class="status-chip status-registered">Present</span>'
+            : '<span class="status-chip status-not-registered">Absent</span>'}
+        </td>
+        <td data-label="Time">${row.attendance_time}</td>
+        <td data-label="Action">
+          <form class="attendance-status-form" data-person-id="${row.person_id}">
+            <input type="hidden" name="person_id" value="${row.person_id}">
+            <input type="hidden" name="csrf_token" value="${csrfToken}">
+            <select name="status" class="form-input attendance-status-select">
+              <option value="Present" ${row.attendance_status === 'Present' ? 'selected' : ''}>Present</option>
+              <option value="Absent" ${row.attendance_status === 'Absent' ? 'selected' : ''}>Absent</option>
+            </select>
+            <button class="button button-small button-primary" type="submit">Update</button>
+          </form>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function refreshAttendance() {
+    const params = new URLSearchParams({
+      category: state.category,
+      status: state.status,
+      search: state.search
+    });
+
+    fetch('{{ url_for("admin.attendance_data") }}?' + params.toString())
+      .then((response) => response.json())
+      .then((data) => {
+        renderSummary(data.summary || { total_registered: 0, present: 0, absent: 0 });
+        renderRows(data.rows || []);
+        updateExportLinks();
+      })
+      .catch(() => {
+        renderSummary({ total_registered: 0, present: 0, absent: 0 });
+        renderRows([]);
+      });
+  }
+
+  function applyFilters() {
+    state.category = categorySelect.value || 'All categories';
+    state.status = statusSelect.value || 'All';
+    state.search = searchInput.value.trim();
+    refreshAttendance();
+  }
+
+  function debounce(callback, wait = 250) {
+    let timeoutId;
+    return (...args) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => callback(...args), wait);
+    };
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener('input', debounce(applyFilters, 250));
+  }
+  if (categorySelect) {
+    categorySelect.addEventListener('change', applyFilters);
+  }
+  if (statusSelect) {
+    statusSelect.addEventListener('change', applyFilters);
+  }
+
+  if (clearFiltersBtn) {
+    clearFiltersBtn.addEventListener('click', () => {
+      state.category = 'All categories';
+      state.status = 'All';
+      state.search = '';
+      categorySelect.value = 'All categories';
+      statusSelect.value = 'All';
+      searchInput.value = '';
+      refreshAttendance();
+    });
+  }
+
+  openExportModal.addEventListener('click', () => {
+    exportModal.classList.add('is-visible');
+    exportModal.setAttribute('aria-hidden', 'false');
+  });
+
+  closeExportModal.addEventListener('click', () => {
+    exportModal.classList.remove('is-visible');
+    exportModal.setAttribute('aria-hidden', 'true');
+  });
+
+  exportModal.addEventListener('click', (event) => {
+    if (event.target === exportModal) {
+      exportModal.classList.remove('is-visible');
+      exportModal.setAttribute('aria-hidden', 'true');
+    }
+  });
+
+  document.addEventListener('submit', (event) => {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement) || !form.classList.contains('attendance-status-form')) return;
+    event.preventDefault();
+
+    const formData = new FormData(form);
+    const personId = formData.get('person_id');
+    const status = formData.get('status');
+
+    fetch('{{ url_for("admin.update_attendance_status") }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'X-CSRFToken': csrfToken
+      },
+      body: new URLSearchParams({ person_id: String(personId), status: String(status) })
+    })
+      .then((response) => response.json())
+      .then(() => refreshAttendance())
+      .catch(() => refreshAttendance());
+  });
+
+  updateExportLinks();
+</script>
+{% endblock %}

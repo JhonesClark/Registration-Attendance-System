@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+  <h2>Settings</h2>
+  <p class="dashboard-sub">Manage your account, notifications, security, and system preferences.</p>
+</div>
+
+<div class="settings-grid">
+  <div class="settings-left">
+    <div class="settings-card account-card">
+      <div class="card-head">
+        <h3>Account</h3>
+        <p class="muted">Manage your account information and credentials.</p>
+      </div>
+      <div class="card-body">
+        <div class="account-row">
+          <div class="avatar-large">{{ current_user.username[:2].upper() }}</div>
+          <div class="account-info">
+            <div class="acct-name">BCMBC</div>
+            <div class="acct-role">{{ 'Home Builders' if current_user.role=='ADMIN' else 'Secretary' }}</div>
+            <div class="acct-status"><span class="status-dot" aria-hidden="true"></span> <span class="status-text">Active</span></div>
+          </div>
+        </div>
+
+        <div class="account-fields">
+          <div class="field"><div class="field-label">Email</div><div class="field-value" id="acct-email">{{ current_user.username }}</div></div>
+          <div class="field"><div class="field-label">Role</div><div class="field-value">{{ 'Home Builders' if current_user.role=='ADMIN' else 'Secretary'}}</div></div>
+          <div class="field"><div class="field-label">Account Status</div><div class="field-value"><span class="status-dot" aria-hidden="true"></span> Active</div></div>
+        </div>
+
+        <div class="account-actions">
+          <button id="open-change-email" class="button outline">Change Email</button>
+          <button id="open-change-password" class="button primary">Change Password</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-card system-card">
+      <div class="card-head"><h3>System Preferences</h3><p class="muted">Timezone, date and time formatting.</p></div>
+      <div class="card-body">
+        <div class="pref-row"><label>Timezone</label><select id="pref-timezone" class="select-field"><option selected>Asia/Manila</option></select></div>
+        <div class="pref-row"><label>Date Format</label><select id="pref-date-format" class="select-field"><option value="MMMM D, YYYY">August 10, 2026</option><option value="MM/DD/YYYY">08/10/2026</option><option value="YYYY-MM-DD">2026-08-10</option></select></div>
+        <div class="pref-row"><label>Time Format</label><select id="pref-time-format" class="select-field"><option value="12">12-hour</option><option value="24">24-hour</option></select></div>
+        <div style="margin-top:12px;display:flex;gap:12px;align-items:center"><div class="muted small">Current Date</div><div id="date-example" class="field-value"></div><div class="muted small">Current Time</div><div id="time-example" class="field-value"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-right">
+    <div class="settings-card notifications-card">
+      <div class="card-head"><h3>Notifications</h3><p class="muted">Control how registration and system notifications are delivered.</p></div>
+      <div class="card-body">
+        <div class="notif-item"><div class="notif-text"><strong>Registration Notifications</strong><div class="muted small">Get notified when a new registration is added.</div></div><div class="toggle"><label class="switch"><input type="checkbox" id="registration_notifications"><span class="slider"></span></label></div></div>
+        <div class="divider"></div>
+        <div class="notif-item"><div class="notif-text"><strong>Activity Notifications</strong><div class="muted small">Get notified about important system activities.</div></div><div class="toggle"><label class="switch"><input type="checkbox" id="activity_notifications"><span class="slider"></span></label></div></div>
+        <div class="divider"></div>
+        <div class="notif-item"><div class="notif-text"><strong>Notification Sound</strong><div class="muted small">Play a sound when a new notification arrives.</div></div><div class="toggle"><label class="switch"><input type="checkbox" id="notification_sound"><span class="slider"></span></label></div></div>
+        <div class="test-sound-box">
+          <div class="test-left"><div class="icon">🔊</div><div><div class="muted small">Test Sound</div><div class="muted tiny">Click to play the notification sound.</div></div></div>
+          <div class="test-right"><button id="test-sound" class="button small">Play Sound</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-card security-card">
+      <div class="card-head"><h3>Security</h3><p class="muted">Account access and session controls.</p></div>
+      <div class="card-body">
+        <div class="field"><div class="field-label">Last Login</div><div class="field-value">{% if last_login %}{{ last_login.strftime('%B %d, %Y %I:%M %p') }}{% else %}Not available{% endif %}</div></div>
+        <div class="field"><div class="field-label">Login Activity</div><div class="field-value"><a class="button outline small" href="{{ url_for('admin.activity') }}">View Activity</a></div></div>
+        <div class="field"><div class="field-label">Logout All Sessions</div><div class="field-value"><button class="button outline small" disabled title="Not supported by current session store">Logout All</button></div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- right column already rendered above; removed duplicate block -->
+
+  <div class="settings-about">
+    <div class="settings-card about-card">
+      <div class="card-head"><h3>About</h3></div>
+      <div class="card-body about-body">
+        <div class="about-left"><img src="{{ url_for('static', filename='img/BCMBC.jpg') }}" alt="logo" class="about-logo"></div>
+        <div class="about-right">
+          <div class="about-title">Home Builders Registration System</div>
+          <div class="muted small">A registration and monitoring system for BCMBC Home Builders.</div>
+          <div class="muted small">Developed with love by Jhones Clark Curtina from BCMBC Tech Team.</div>
+          <div style="margin-top:8px"><strong>Version</strong> 1.0.0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- Change Email Modal -->
+<div id="modal-change-email" class="modal" aria-hidden="true">
+  <div class="modal-dialog" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-header"><h3>Change Email</h3></div>
+      <form id="change-email-form">
+        <div class="modal-body">
+          <label>Current Password</label>
+          <input type="password" name="current_password" class="form-input" required>
+          <label>New Email</label>
+          <input type="email" name="new_email" class="form-input" required>
+          <label>Confirm New Email</label>
+          <input type="email" name="confirm_email" class="form-input" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="button outline" data-modal-close>Cancel</button>
+          <button type="submit" class="button primary">Update Email</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Change Password Modal -->
+<div id="modal-change-password" class="modal" aria-hidden="true">
+  <div class="modal-dialog" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-header"><h3>Change Password</h3></div>
+      <form id="change-password-form">
+        <div class="modal-body">
+          <label>Current Password</label>
+          <input type="password" name="current_password" class="form-input" required>
+          <label>New Password</label>
+          <input type="password" name="new_password" class="form-input" required>
+          <label>Confirm New Password</label>
+          <input type="password" name="confirm_password" class="form-input" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="button outline" data-modal-close>Cancel</button>
+          <button type="submit" class="button primary">Update Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+  const csrf = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
+  function postSettings(payload){
+    return fetch('{{ url_for('profile.settings_update') }}', {
+      method: 'POST', headers: {'Content-Type':'application/json','X-CSRFToken': csrf}, body: JSON.stringify(payload)
+    });
+  }
+
+  // load settings and populate controls
+  fetch('{{ url_for('profile.settings_json') }}')
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('registration_notifications').checked = !!data.registration_notifications;
+      document.getElementById('activity_notifications').checked = !!data.activity_notifications;
+      const ns = document.getElementById('notification_sound');
+      ns.checked = !!data.notification_sound;
+      document.getElementById('test-sound').disabled = !ns.checked;
+      // system prefs
+      if (data.timezone) document.getElementById('pref-timezone').value = data.timezone;
+      if (data.date_format) document.getElementById('pref-date-format').value = data.date_format;
+      if (data.time_format) document.getElementById('pref-time-format').value = data.time_format;
+      window._hb_settings = data;
+    }).catch(()=>{ window._hb_settings = { notification_sound: false }; });
+
+  // wire toggles
+  ['registration_notifications','activity_notifications','notification_sound'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('change', (e) => {
+      const payload = {}; payload[id] = e.target.checked;
+      postSettings(payload).then(()=> showNotification('Settings saved', 'success')).catch(()=> showNotification('Unable to save settings', 'error'));
+      if (id === 'notification_sound') document.getElementById('test-sound').disabled = !e.target.checked;
+    });
+  });
+
+  // system prefs
+  ['pref-timezone','pref-date-format','pref-time-format'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('change', (e) => {
+      const payload = {};
+      if (id === 'pref-timezone') payload.timezone = e.target.value;
+      if (id === 'pref-date-format') payload.date_format = e.target.value;
+      if (id === 'pref-time-format') payload.time_format = e.target.value;
+      postSettings(payload).then(()=> showNotification('Preferences saved', 'success')).catch(()=> showNotification('Unable to save preferences', 'error'));
+    });
+  });
+
+  // Test sound
+  const testBtn = document.getElementById('test-sound');
+  if (testBtn){
+    testBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      try{
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine'; o.frequency.setValueAtTime(880, ctx.currentTime);
+        g.gain.setValueAtTime(0.02, ctx.currentTime);
+        o.connect(g); g.connect(ctx.destination);
+        o.start();
+        setTimeout(()=>{ o.stop(); ctx.close(); }, 450);
+      }catch(err){ console.warn('sound error', err); }
+    });
+  }
+
+  // Modal helpers
+  function openModal(id){ const m = document.getElementById(id); if (!m) return; m.classList.add('is-visible'); m.setAttribute('aria-hidden','false'); }
+  function closeModal(id){ const m = document.getElementById(id); if (!m) return; m.classList.remove('is-visible'); m.setAttribute('aria-hidden','true'); }
+
+  document.getElementById('open-change-email').addEventListener('click', ()=> openModal('modal-change-email'));
+  document.getElementById('open-change-password').addEventListener('click', ()=> openModal('modal-change-password'));
+  document.querySelectorAll('[data-modal-close]').forEach(btn => btn.addEventListener('click', (e)=>{ e.preventDefault(); const parent = btn.closest('.modal'); if(parent) parent.classList.remove('is-visible'); }));
+
+  // submit change email via AJAX
+  const emailForm = document.getElementById('change-email-form');
+  if (emailForm) emailForm.addEventListener('submit', (ev)=>{
+    ev.preventDefault();
+    const fd = new FormData(emailForm);
+    const payload = { current_password: fd.get('current_password'), new_email: fd.get('new_email'), confirm_email: fd.get('confirm_email') };
+    fetch('{{ url_for('profile.change_email_json') }}',{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':csrf},body:JSON.stringify(payload)})
+      .then(r=>r.json()).then(j=>{
+        if (j.status === 'ok'){
+          showNotification(j.message,'success');
+          document.getElementById('acct-email').textContent = j.username || payload.new_email;
+          closeModal('modal-change-email');
+        } else {
+          showNotification(j.message || 'Unable to update email','error');
+        }
+      }).catch(()=> showNotification('Unable to update email','error'));
+  });
+
+  // submit change password via AJAX
+  const pwdForm = document.getElementById('change-password-form');
+  if (pwdForm) pwdForm.addEventListener('submit', (ev)=>{
+    ev.preventDefault();
+    const fd = new FormData(pwdForm);
+    const payload = { current_password: fd.get('current_password'), new_password: fd.get('new_password'), confirm_password: fd.get('confirm_password') };
+    fetch('{{ url_for('profile.change_password_json') }}',{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':csrf},body:JSON.stringify(payload)})
+      .then(r=>r.json()).then(j=>{
+        if (j.status === 'ok'){
+          showNotification(j.message,'success');
+          closeModal('modal-change-password');
+        } else {
+          showNotification(j.message || 'Unable to change password','error');
+        }
+      }).catch(()=> showNotification('Unable to change password','error'));
+  });
+
+  // Live date/time in Asia/Manila
+  function manilaNow(){ return new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Manila'})); }
+
+  function pad(n){ return n < 10 ? '0'+n : n; }
+
+  function formatDate(fmt, d){
+    if(fmt === 'MMMM D, YYYY'){
+      return new Intl.DateTimeFormat('en-US',{ month:'long', day:'numeric', year:'numeric', timeZone:'Asia/Manila'}).format(d);
+    } else if(fmt === 'MM/DD/YYYY'){
+      return pad(d.getMonth()+1)+'/'+pad(d.getDate())+'/'+d.getFullYear();
+    } else if(fmt === 'YYYY-MM-DD'){
+      return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+    }
+    return d.toLocaleDateString();
+  }
+
+  function formatTime(mode, d){
+    if(mode === '12'){
+      return new Intl.DateTimeFormat('en-US',{ hour:'numeric', minute:'2-digit', hour12:true, timeZone:'Asia/Manila'}).format(d);
+    }
+    return new Intl.DateTimeFormat('en-GB',{ hour:'2-digit', minute:'2-digit', hour12:false, timeZone:'Asia/Manila'}).format(d);
+  }
+
+  function updateDateTimePreview(){
+    const d = manilaNow();
+    const dateFmt = document.getElementById('pref-date-format').value || 'MMMM D, YYYY';
+    const timeFmt = document.getElementById('pref-time-format').value || '12';
+    const dateEl = document.getElementById('date-example');
+    const timeEl = document.getElementById('time-example');
+    if(dateEl) dateEl.textContent = formatDate(dateFmt, d);
+    if(timeEl) timeEl.textContent = formatTime(timeFmt, d);
+  }
+
+  // init and tick
+  updateDateTimePreview();
+  setInterval(updateDateTimePreview, 1000);
+
+  // update previews when selects change
+  ['pref-date-format','pref-time-format'].forEach(id => { const el=document.getElementById(id); if(!el) return; el.addEventListener('change', updateDateTimePreview); });
+
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+  <h2>Profile</h2>
+  <p class="dashboard-sub">Manage your account information and security settings.</p>
+</div>
+
+<div class="profile-grid">
+  <div class="dashboard-card">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;padding:1.5rem">
+      <div class="avatar" style="width:96px;height:96px;font-size:1.8rem">{{ current_user.username[:2].upper() }}</div>
+      <div style="text-align:center">
+        <div style="font-weight:900;font-size:1.1rem">{{ current_user.username }}</div>
+        <div style="color:var(--muted)">{{ 'Home Builders' if current_user.role=='ADMIN' else 'Secretary' }}</div>
+      </div>
+    </div>
+
+    <div style="border-top:1px solid var(--border);padding:1rem">
+      <h3 style="margin:0 0 0.5rem">Account</h3>
+      <div style="display:grid;gap:0.45rem">
+        <div><strong>Email / Username</strong><div style="color:var(--muted)">{{ current_user.username }}</div></div>
+        <div><strong>Account Role</strong><div style="color:var(--muted)">{{ 'Home Builders' if current_user.role=='ADMIN' else 'Secretary' }}</div></div>
+        <a class="button" href="{{ url_for('profile.settings') }}">Edit Profile / Settings</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-card">
+    <h3>Account Information</h3>
+    <div style="margin-top:0.6rem;display:grid;gap:0.75rem">
+      <div style="display:flex;justify-content:space-between"><strong>Full Name</strong><span>{{ current_user.username }}</span></div>
+      <div style="display:flex;justify-content:space-between"><strong>Email</strong><span>{{ current_user.username }}</span></div>
+      <div style="display:flex;justify-content:space-between"><strong>Role</strong><span>{{ 'Home Builders' if current_user.role=='ADMIN' else 'Secretary' }}</span></div>
+      <div style="display:flex;justify-content:space-between"><strong>Status</strong><span>● Active</span></div>
+    </div>
+
+    <hr style="margin:1rem 0">
+    <h3>Security</h3>
+    <p style="color:var(--muted);margin-top:0.2rem">Change your email or password below. Passwords are never displayed or sent.</p>
+
+    <form method="POST" action="{{ url_for('profile.change_email') }}" style="margin-top:1rem">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div style="display:grid;gap:0.5rem">
+        <label>Current password</label>
+        <input class="form-input" type="password" name="current_password" required>
+        <label>New email (username)</label>
+        <input class="form-input" type="text" name="new_email" required>
+        <label>Confirm new email</label>
+        <input class="form-input" type="text" name="confirm_email" required>
+        <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
+          <button class="button" type="submit">Change Email</button>
+        </div>
+      </div>
+    </form>
+
+    <form method="POST" action="{{ url_for('profile.change_password') }}" style="margin-top:1.25rem">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div style="display:grid;gap:0.5rem">
+        <label>Current password</label>
+        <input class="form-input" type="password" name="current_password" required>
+        <label>New password</label>
+        <input class="form-input" type="password" name="new_password" required>
+        <label>Confirm new password</label>
+        <input class="form-input" type="password" name="confirm_password" required>
+        <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
+          <button class="button" type="submit">Change Password</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

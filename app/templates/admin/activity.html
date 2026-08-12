@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Activity Log{% endblock %}
+{% block content %}
+<div class="dashboard-card">
+  <div class="dashboard-header">
+    <div>
+      <h2>Live Activity Log</h2>
+      <p>Newest actions appear automatically as secretaries add or register people.</p>
+    </div>
+    <div class="dashboard-actions-row">
+      <a class="button" href="{{ url_for('admin.dashboard') }}">BACK TO DASHBOARD</a>
+      <a class="button button-secondary" href="{{ url_for('people.list_people') }}">SEARCH PEOPLE</a>
+      <button type="button" class="button button-danger" id="open-clear-history-modal">
+        <span class="button-icon">🗑</span>
+        <span>CLEAR HISTORY</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="empty-activity-log" class="empty-state{% if activities %} hidden{% endif %}">
+    <div class="empty-state-icon">◔</div>
+    <h3>Activity history is empty.</h3>
+    <p>New activities will appear here as users interact with the system.</p>
+  </div>
+
+  <ul class="activity-list" id="activity-list">
+    {% for activity in activities %}
+    <li class="activity-item">
+      <strong>{{ activity.created_at.strftime('%I:%M %p') }}</strong>
+      <span>{{ activity.description }}</span>
+    </li>
+    {% else %}
+    <li class="activity-item muted hidden">No activity yet.</li>
+    {% endfor %}
+  </ul>
+</div>
+
+<div class="modal-overlay" id="clear-history-modal" aria-hidden="true">
+  <div class="modal-panel">
+    <div class="modal-header">
+      <h3>Clear Activity History?</h3>
+      <button class="icon-button icon-button-plain" id="close-clear-history-modal" aria-label="Close confirmation">×</button>
+    </div>
+    <div class="modal-body">
+      <p>This will permanently remove all activity history from the system. This action cannot be undone.</p>
+      <p class="modal-note">Only activity history will be cleared. People, registrations, accounts, and registration data will remain unchanged.</p>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="button button-secondary" id="cancel-clear-history">Cancel</button>
+      <button type="button" class="button button-danger" id="confirm-clear-history">Clear History</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
